@@ -1,0 +1,11 @@
+asset_id,asset_type,road_subtype,location_lat,location_lng,age_years,criticality,last_maintenance_date,connected_assets,surface_type,lane_count,daily_traffic_vehicles
+ROAD_000,road,HIGHWAY,19.111688,72.926707,25,1,2021-06-05 00:00:00,"[""ROAD_001"", ""BRIDGE_000""]",composite,2,21352
+ROAD_001,road,HIGHWAY,19.144661,72.832613,6,1,2021-11-11 00:00:00,"[""ROAD_000"", ""ROAD_002""]",concrete,2,44043
+ROAD_002,road,HIGHWAY,19.06397,72.838623,27,5,2021-06-14 00:00:00,"[""ROAD_001"", ""ROAD_003""]",concrete,3,33831
+ROAD_003,road,URBAN,19.109037,72.897817,11,5,2022-05-04 00:00:00,"[""ROAD_002"", ""ROAD_004"", ""BRIDGE_001""]",concrete,7,34632
+ROAD_004,road,URBAN,19.100684,72.89025,10,4,2022-03-18 00:00:00,"[""ROAD_003"", ""ROAD_005""]",concrete,7,16755
+ROAD_005,road,URBAN,19.087048,72.894625,4,1,2021-11-15 00:00:00,"[""ROAD_004"", ""ROAD_006""]",concrete,7,40889
+ROAD_006,road,URBAN,19.129159,72.948196,9,3,2021-04-09 00:00:00,"[""ROAD_005"", ""ROAD_007"", ""BRIDGE_002""]",concrete,2,21280
+ROAD_007,road,RURAL,19.109414,72.828018,14,2,2021-06-29 00:00:00,"[""ROAD_006"", ""ROAD_008""]",asphalt,3,69325
+ROAD_008,road,RURAL,19.142337,72.90774,26,2,2022-11-18 00:00:00,"[""ROAD_007"", ""ROAD_009""]",composite,6,58618
+ROAD_009,road,RURAL,19.113737,72.825388,26,4,2022-03-25 00:00:00,"[""ROAD_008"", ""BRIDGE_003""]",concrete,7,76853
