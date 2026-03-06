@@ -9,6 +9,7 @@ import CityComparison from './pages/CityComparison';
 import ScenarioBuilder from './pages/ScenarioBuilder';
 import FailureReplay from './pages/FailureReplay';
 import LiveStream from './pages/LiveStream';
+import BridgeCAD from './pages/BridgeCAD';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/scenario-builder" element={<ScenarioBuilder />} />
           <Route path="/failure-replay" element={<FailureReplay />} />
           <Route path="/live-stream" element={<LiveStream />} />
+          <Route path="/bridge-cad" element={<BridgeCAD />} />
         </Route>
       </Routes>
     </BrowserRouter>

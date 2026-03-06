@@ -26,6 +26,7 @@ const NAV = [
     { to: '/city-comparison', label: 'Cities', icon: Activity, desc: 'Federation' },
     { to: '/scenario-builder', label: 'What-If', icon: FlaskConical, desc: 'Simulate' },
     { to: '/failure-replay', label: 'Replay', icon: PlaySquare, desc: 'Playback' },
+    { to: '/bridge-cad', label: 'CAD Viewer', desc: '3D Structural', icon: Box },
 ];
 
 export default function Layout() {
