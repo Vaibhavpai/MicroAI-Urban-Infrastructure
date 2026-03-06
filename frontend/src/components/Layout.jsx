@@ -13,6 +13,7 @@ import {
     FlaskConical,
     PlaySquare,
     Radio,
+    ScanLine,
 } from 'lucide-react';
 import './Layout.css';
 
@@ -22,11 +23,12 @@ const NAV = [
     { to: '/digital-twin', label: 'Digital Twin', icon: Box, desc: 'Simulation' },
     { to: '/analytics', label: 'Analytics', icon: BarChart3, desc: 'Cost & ROI' },
     { to: '/incidents', label: 'Incidents', icon: AlertTriangle, desc: 'Response Hub' },
-    { to:'/live-stream', label:'Live Stream', desc:'Kafka Feed', icon: Radio },
+    { to: '/live-stream', label: 'Live Stream', desc: 'Kafka Feed', icon: Radio },
     { to: '/city-comparison', label: 'Cities', icon: Activity, desc: 'Federation' },
     { to: '/scenario-builder', label: 'What-If', icon: FlaskConical, desc: 'Simulate' },
     { to: '/failure-replay', label: 'Replay', icon: PlaySquare, desc: 'Playback' },
     { to: '/bridge-cad', label: 'CAD Viewer', desc: '3D Structural', icon: Box },
+    { to: '/road-scan', label: 'RoadScan', desc: 'AI Pavement', icon: ScanLine },
 ];
 
 export default function Layout() {
@@ -38,8 +40,8 @@ export default function Layout() {
             <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
                 {/* Brand */}
                 <div className="sidebar-brand">
-                    <div className="brand-logo">
-                        <Zap size={20} />
+                    <div className="brand-logo" style={{ padding: 0, background: 'transparent', border: 'none', boxShadow: 'none' }}>
+                        <img src="/logo.png" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover' }} alt="InfraWatch Logo" />
                     </div>
                     {!collapsed && (
                         <div className="brand-info">

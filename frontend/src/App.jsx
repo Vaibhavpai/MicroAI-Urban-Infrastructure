@@ -10,6 +10,7 @@ import ScenarioBuilder from './pages/ScenarioBuilder';
 import FailureReplay from './pages/FailureReplay';
 import LiveStream from './pages/LiveStream';
 import BridgeCAD from './pages/BridgeCAD';
+import RoadScan from './pages/RoadScan';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/failure-replay" element={<FailureReplay />} />
           <Route path="/live-stream" element={<LiveStream />} />
           <Route path="/bridge-cad" element={<BridgeCAD />} />
+          <Route path="/road-scan" element={<RoadScan />} />
         </Route>
       </Routes>
     </BrowserRouter>

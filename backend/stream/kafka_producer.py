@@ -79,6 +79,17 @@ SENSOR_PROFILES = {
         },
         "degrade_sensors": ["oil_temp_c", "winding_temp_c", "dissolved_gas_ppm"],
     },
+    "hospital": {
+        "sensors": {
+            "power_supply_v":            {"baseline": 230, "noise": 5,   "unit": "V"},
+            "backup_generator_fuel_pct": {"baseline": 90,  "noise": 2,   "unit": "%"},
+            "oxygen_pressure_bar":       {"baseline": 4.5, "noise": 0.2, "unit": "bar"},
+            "hvac_air_quality_aqi":      {"baseline": 30,  "noise": 5,   "unit": "AQI"},
+            "structural_vibration_hz":   {"baseline": 15,  "noise": 2,   "unit": "Hz"},
+            "water_supply_pressure_bar": {"baseline": 3.0, "noise": 0.3, "unit": "bar"},
+        },
+        "degrade_sensors": ["oxygen_pressure_bar", "power_supply_v", "backup_generator_fuel_pct"],
+    },
 }
 
 # ── State ────────────────────────────────────────────────────────────────────

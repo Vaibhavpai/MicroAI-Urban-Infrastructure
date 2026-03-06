@@ -291,6 +291,8 @@ const Analytics = () => {
                                     background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: 10, fontSize: '0.78rem'
                                 }}
+                                itemStyle={{ color: '#e2e8f0' }}
+                                labelStyle={{ color: '#94a3b8' }}
                                 formatter={(value) => [`₹${value}K`, undefined]}
                             />
                             <Legend wrapperStyle={{ fontSize: '0.72rem' }} />
@@ -331,6 +333,8 @@ const Analytics = () => {
                                         background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
                                         borderRadius: 10, fontSize: '0.8rem'
                                     }}
+                                    itemStyle={{ color: '#e2e8f0' }}
+                                    labelStyle={{ color: '#94a3b8' }}
                                     formatter={(value) => [`₹${value?.toLocaleString()}`, undefined]}
                                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                 />
@@ -365,6 +369,8 @@ const Analytics = () => {
                                         background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
                                         borderRadius: 10, fontSize: '0.8rem'
                                     }}
+                                    itemStyle={{ color: '#e2e8f0' }}
+                                    labelStyle={{ color: '#94a3b8' }}
                                     formatter={(value) => [`₹${value}K`, undefined]}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '0.72rem', color: '#94a3b8' }} />

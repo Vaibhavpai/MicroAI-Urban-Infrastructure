@@ -16,9 +16,11 @@ class Settings(BaseSettings):
     # ── Kafka ────────────────────────────────────────────────────────────
     USE_KAFKA: bool = True  # Set to False to revert to APScheduler
     KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
+    
+    GROQ_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
-
+        extra = "ignore"
 
 settings = Settings()

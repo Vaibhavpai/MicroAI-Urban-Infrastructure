@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from config import settings
 
-ASSET_TYPES = ["BRIDGE", "PIPE", "ROAD", "TRANSFORMER"]
+ASSET_TYPES = ["BRIDGE", "PIPE", "ROAD", "TRANSFORMER", "HOSPITAL"]
 
 # Feature columns per asset type — must match training exactly
 FEATURE_COLS = {
@@ -25,6 +25,10 @@ FEATURE_COLS = {
         "voltage_v", "current_a", "frequency_hz", "power_kw",
         "temperature_c", "oil_level_pct",
         "harmonic_distortion", "vibration_hz",
+    ],
+    "HOSPITAL": [
+        "power_supply_v", "backup_generator_fuel_pct", "oxygen_pressure_bar",
+        "hvac_air_quality_aqi", "structural_vibration_hz", "water_supply_pressure_bar",
     ],
 }
 
@@ -286,6 +290,7 @@ class ModelStore:
     FIXED_SCORES = {
         "BRIDGE_001": 82.3, "PIPE_042": 61.7,
         "ROAD_012":   44.5, "TRANSFORMER_007": 77.9,
+        "HOSPITAL_001": 88.5,
     }
 
     def _stub_predict(self, asset_id: str, asset_type: str) -> dict:

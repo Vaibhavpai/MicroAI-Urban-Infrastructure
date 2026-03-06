@@ -8,17 +8,15 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+import json
+from config import settings
 
 logger = logging.getLogger("ai_recommend")
 
 router = APIRouter()
 
-GEMINI_API_KEY = "AIzaSyAikFxdcQHNC2sB7jneXVf6VkxSTf-iocQ"
-GEMINI_URL = (
-    f"https://generativelanguage.googleapis.com/v1beta/models/"
-    f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-)
-
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 # ── Request / Response schemas ───────────────────────────────────────────────
 class ShapFactor(BaseModel):
@@ -123,38 +121,38 @@ async def ai_recommend(req: AIRecommendRequest):
     prompt = _build_prompt(req)
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.7,
-            "maxOutputTokens": 1024,
-        },
+        "model": GROQ_MODEL,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "response_format": {"type": "json_object"}
+    }
+
+    headers = {
+        "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+        "Content-Type": "application/json"
     }
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(GEMINI_URL, json=payload)
+            resp = await client.post(GROQ_URL, headers=headers, json=payload)
             resp.raise_for_status()
     except httpx.HTTPStatusError as e:
-        logger.error(f"Gemini API error: {e.response.status_code} — {e.response.text}")
+        logger.error(f"Groq API error: {e.response.status_code} — {e.response.text}")
         return _get_fallback_recommendations(req)
     except httpx.RequestError as e:
-        logger.error(f"Gemini request failed: {e}")
+        logger.error(f"Groq request failed: {e}")
         return _get_fallback_recommendations(req)
     except Exception as e:
-        logger.error(f"Unexpected error in Gemini API call: {e}")
+        logger.error(f"Unexpected error in Groq API call: {e}")
         return _get_fallback_recommendations(req)
 
     body = resp.json()
-    raw_text = (
-        body.get("candidates", [{}])[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "")
-    )
+    raw_text = body.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-    # Parse the JSON from Gemini's response
-    import json
-    # Strip any stray markdown fences if Gemini adds them
+    # Strip any stray markdown fences if LLM adds them despite response_format
     cleaned = raw_text.strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.split("\n", 1)[1]  # remove first line
@@ -165,7 +163,7 @@ async def ai_recommend(req: AIRecommendRequest):
     try:
         parsed = json.loads(cleaned)
     except json.JSONDecodeError:
-        logger.error(f"Failed to parse Gemini response: {raw_text[:500]}")
+        logger.error(f"Failed to parse Groq response: {raw_text[:500]}")
         return _get_fallback_recommendations(req)
 
     return AIRecommendResponse(

@@ -25,6 +25,11 @@ ASSETS = [
      "age_years": 14, "criticality": 5,
      "last_maintenance_date": "2023-11-05",
      "connected_assets": ["PIPE_042"]},
+    {"asset_id": "HOSPITAL_001", "asset_type": "hospital",
+     "location_lat": 19.0166, "location_lng": 72.8529,
+     "age_years": 45, "criticality": 5,
+     "last_maintenance_date": "2023-10-12",
+     "connected_assets": ["TRANSFORMER_007", "PIPE_042"]},
 ]
 
 RISK_SEED = {
@@ -32,6 +37,7 @@ RISK_SEED = {
     "PIPE_042":        (61.7, "HIGH"),
     "ROAD_012":        (44.5, "MEDIUM"),
     "TRANSFORMER_007": (77.9, "HIGH"),
+    "HOSPITAL_001":    (88.5, "CRITICAL"),
 }
 
 def make_reading(asset_id, ts, anomaly=False):
@@ -83,6 +89,10 @@ async def seed():
          "risk_score": 77.9, "severity": "HIGH",
          "top_reason": "Temperature spike detected",
          "sms_sent": False, "timestamp": now - timedelta(minutes=5)},
+        {"alert_id": "ALT_0003", "asset_id": "HOSPITAL_001",
+         "risk_score": 88.5, "severity": "CRITICAL",
+         "top_reason": "Oxygen pressure dropping, Backup fuel empty",
+         "sms_sent": False, "timestamp": now - timedelta(minutes=2)},
     ]
     await db.alerts.insert_many(alerts)
     print(f"✅ Inserted seed alerts")

@@ -13,6 +13,7 @@ const ASSET_POSITIONS = {
     PIPE_042: [19.082, 72.890],
     ROAD_012: [19.058, 72.850],
     TRANSFORMER_007: [19.095, 72.865],
+    HOSPITAL_001: [19.016, 72.852],
 };
 
 const IncidentManagement = () => {
@@ -73,7 +74,7 @@ const IncidentManagement = () => {
                     events: [],
                 }));
 
-                const anomalyAssets = ['BRIDGE_001', 'PIPE_042', 'ROAD_012', 'TRANSFORMER_007'];
+                const anomalyAssets = ['BRIDGE_001', 'PIPE_042', 'ROAD_012', 'TRANSFORMER_007', 'HOSPITAL_001'];
                 const anomalyResults = await Promise.all(anomalyAssets.map(async (aid) => {
                     try {
                         const data = await predictAnomaly(aid);

@@ -14,7 +14,7 @@ const getRiskColor = s => s >= 80 ? '#ef4444' : s >= 60 ? '#f97316' : s >= 40 ? 
 const getRiskLevel = s => s >= 80 ? 'CRITICAL' : s >= 60 ? 'HIGH' : s >= 40 ? 'MEDIUM' : 'LOW'
 
 // Map MongoDB asset_type → sensor config key
-const TYPE_MAP = { bridge: 'BRIDGE', pipeline: 'PIPE', road: 'ROAD', transformer: 'TRANSFORMER' }
+const TYPE_MAP = { bridge: 'BRIDGE', pipeline: 'PIPE', road: 'ROAD', transformer: 'TRANSFORMER', hospital: 'HOSPITAL' }
 const normalizeType = (assetType) => TYPE_MAP[assetType] || TYPE_MAP[assetType?.toLowerCase()] || 'BRIDGE'
 
 // ── Asset-type sensor definitions ────────────────────────────────────────────
@@ -54,6 +54,15 @@ const SENSOR_DEFS = {
     baselines: { oil_temp_c: 62, winding_temp_c: 78, load_pct: 72, dissolved_gas_ppm: 120, vibration_hz: 52, humidity_pct: 35 },
     degradeStart: { oil_temp_c: 1.5, winding_temp_c: 1.8, load_pct: 0.8, dissolved_gas_ppm: 5, vibration_hz: 1.2, humidity_pct: 0.4 },
     crisisStart: { oil_temp_c: 2.0, winding_temp_c: 2.5, load_pct: 0, dissolved_gas_ppm: 8, vibration_hz: 0, humidity_pct: 0 },
+  },
+  HOSPITAL: {
+    sensors: ['power_supply_v', 'backup_generator_fuel_pct', 'oxygen_pressure_bar', 'hvac_air_quality_aqi', 'structural_vibration_hz', 'water_supply_pressure_bar'],
+    labels: ['Power Supply', 'Backup Fuel', 'Oxygen Pressure', 'Air Quality', 'Vibration', 'Water Pressure'],
+    units: ['V', '%', 'bar', 'AQI', 'Hz', 'bar'],
+    colors: ['#6366f1', '#f97316', '#ef4444', '#06b6d4', '#a855f7', '#22c55e'],
+    baselines: { power_supply_v: 230, backup_generator_fuel_pct: 90, oxygen_pressure_bar: 4.5, hvac_air_quality_aqi: 30, structural_vibration_hz: 15, water_supply_pressure_bar: 3.0 },
+    degradeStart: { power_supply_v: -2, backup_generator_fuel_pct: -1.5, oxygen_pressure_bar: -0.1, hvac_air_quality_aqi: 2, structural_vibration_hz: 0.5, water_supply_pressure_bar: -0.05 },
+    crisisStart: { power_supply_v: -5, backup_generator_fuel_pct: -3, oxygen_pressure_bar: -0.3, hvac_air_quality_aqi: 10, structural_vibration_hz: 1.5, water_supply_pressure_bar: -0.2 },
   },
 }
 
@@ -143,22 +152,45 @@ const S = {
 // ── gauge component ───────────────────────────────────────────────────────────
 const RiskGauge = ({ score }) => {
   const color = getRiskColor(score)
-  const pct = Math.min(score / 100, 1)
-  const cx = 110, cy = 100, r = 80
-  const angle = Math.PI - pct * Math.PI
-  const arcX = cx + r * Math.cos(angle)
-  const arcY = cy - r * Math.sin(angle)
-  const bg = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`
-  const fg = pct > 0 ? `M ${cx - r} ${cy} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${arcX} ${arcY}` : ''
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <svg width="220" height="120" viewBox="0 0 220 120">
-        <path d={bg} fill="none" stroke="#1e293b" strokeWidth="14" strokeLinecap="round" />
-        {fg && <path d={fg} fill="none" stroke={color} strokeWidth="14" strokeLinecap="round" style={{ transition: 'all 0.4s ease' }} />}
-        <text x="110" y="88" textAnchor="middle" fill="white" fontSize="32" fontWeight="bold" fontFamily="Inter">{score.toFixed(1)}</text>
-        <text x="110" y="108" textAnchor="middle" fill="#64748b" fontSize="11" fontFamily="Inter">Risk Score</text>
-      </svg>
-      <span style={{ background: color + '20', color, border: `1px solid ${color}40`, borderRadius: '999px', padding: '2px 12px', fontSize: '11px', fontWeight: '700' }}>
+      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <svg viewBox="0 0 220 130" style={{ width: '100%', maxWidth: '220px', overflow: 'visible' }}>
+          <filter id={`glow-replay`}>
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <path d="M 30 110 A 80 80 0 0 1 190 110"
+            fill="none"
+            stroke="rgba(255,255,255,0.05)"
+            strokeWidth="14"
+            strokeLinecap="round" />
+          <path d="M 30 110 A 80 80 0 0 1 190 110"
+            fill="none"
+            stroke={color}
+            strokeWidth="14"
+            strokeLinecap="round"
+            pathLength="100"
+            strokeDasharray="100"
+            strokeDashoffset={100 - (score || 0)}
+            filter={`url(#glow-replay)`}
+            style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease' }}
+          />
+        </svg>
+        <div style={{ position: 'absolute', top: '50px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '38px', fontWeight: '800', color: color, lineHeight: '1', textShadow: `0 0 15px ${color}50` }}>
+            {score.toFixed(1)}
+          </span>
+          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', letterSpacing: '0.5px', marginTop: '4px' }}>
+            Risk Score
+          </span>
+        </div>
+      </div>
+      <span style={{ background: color + '15', color, border: `1px solid ${color}30`, borderRadius: '999px', padding: '4px 14px', fontSize: '11px', fontWeight: '700', marginTop: '12px' }}>
         {getRiskLevel(score)}
       </span>
     </div>

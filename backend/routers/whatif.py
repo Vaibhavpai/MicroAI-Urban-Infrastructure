@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, List
 from services.model_loader import model_store
 import httpx
-from routers.ai_recommend import GEMINI_API_KEY
+from config import settings
 
 router = APIRouter()
 
@@ -114,7 +114,8 @@ class WhatIfSummaryRequest(BaseModel):
     scenario_values: Dict[str, Any]
     most_impactful_change: Optional[Dict[str, Any]] = None
 
-GEMINI_SUMMARY_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 @router.post("/whatif/summary")
 async def get_whatif_summary(req: WhatIfSummaryRequest):
@@ -133,23 +134,32 @@ Most Impactful Change: {req.most_impactful_change if req.most_impactful_change e
 Provide a concise technical summary (3-4 sentences maximum) of how the simulated changes affect the asset's risk profile, and what the primary concern or positive outcome is. Provide plain text without markdown or asterisks."""
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.5},
+        "model": GROQ_MODEL,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.5,
+        "max_tokens": 512
     }
+    headers = {
+        "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(GEMINI_SUMMARY_URL, json=payload)
+            resp = await client.post(GROQ_URL, headers=headers, json=payload)
             resp.raise_for_status()
             body = resp.json()
-            raw_text = body.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            raw_text = body.get("choices", [{}])[0].get("message", {}).get("content", "")
             return {"summary": raw_text.strip()}
     except httpx.HTTPStatusError as e:
         import logging
         logger = logging.getLogger("whatif_summary")
-        logger.error(f"[Gemini 2.5 Flash] HTTP Error {e.response.status_code}: {e.response.text}")
-        return {"summary": "Gemini 2.5 Flash summary generation failed."}
+        logger.error(f"[Groq API] HTTP Error {e.response.status_code}: {e.response.text}")
+        return {"summary": "Groq summary generation failed."}
     except Exception as e:
         import logging
         logger = logging.getLogger("whatif_summary")
-        logger.error(f"[Gemini 2.5 Flash] Unexpected Error: {e}")
-        return {"summary": "Gemini 2.5 Flash summary generation failed."}
+        logger.error(f"[Groq API] Unexpected Error: {e}")
+        return {"summary": "Groq summary generation failed."}

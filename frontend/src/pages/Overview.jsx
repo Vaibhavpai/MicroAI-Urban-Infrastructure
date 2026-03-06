@@ -25,20 +25,21 @@ const API = 'http://localhost:8000';
 const CITY_CENTER = [19.076, 72.877];
 
 const FALLBACK_POSITIONS = {
-    BRIDGE_001:      [19.064, 72.870],
-    BRIDGE_002:      [19.068, 72.875],
-    PIPE_042:        [19.082, 72.890],
-    PIPE_043:        [19.079, 72.885],
-    ROAD_012:        [19.058, 72.850],
-    ROAD_013:        [19.055, 72.855],
+    BRIDGE_001: [19.064, 72.870],
+    BRIDGE_002: [19.068, 72.875],
+    PIPE_042: [19.082, 72.890],
+    PIPE_043: [19.079, 72.885],
+    ROAD_012: [19.058, 72.850],
+    ROAD_013: [19.055, 72.855],
     TRANSFORMER_007: [19.095, 72.865],
     TRANSFORMER_008: [19.091, 72.860],
+    HOSPITAL_001: [19.016, 72.852],
 };
 
 // ── risk helpers ──────────────────────────────────────────────────────────────
-const getRiskColor  = s => s >= 75 ? '#ef4444' : s >= 50 ? '#f59e0b' : '#10b981';
-const getRiskLevel  = s => s >= 75 ? 'critical' : s >= 50 ? 'warning' : 'optimal';
-const getRiskLabel  = s => s >= 75 ? 'CRITICAL' : s >= 50 ? 'WARNING'  : 'OPTIMAL';
+const getRiskColor = s => s >= 75 ? '#ef4444' : s >= 50 ? '#f59e0b' : '#10b981';
+const getRiskLevel = s => s >= 75 ? 'critical' : s >= 50 ? 'warning' : 'optimal';
+const getRiskLabel = s => s >= 75 ? 'CRITICAL' : s >= 50 ? 'WARNING' : 'OPTIMAL';
 
 // ── direct fetch helpers (no imported client) ─────────────────────────────────
 const apiFetch = async (path, options = {}) => {
@@ -115,11 +116,11 @@ const AlertItem = ({ id, severity, message, time, onClick }) => (
 // ── main component ────────────────────────────────────────────────────────────
 const Overview = () => {
     const navigate = useNavigate();
-    const [locations,  setLocations]  = useState([]);
-    const [kpiStats,   setKpiStats]   = useState({ totalAssets:0, highRisk:0, predictedFailures:0 });
-    const [alerts,     setAlerts]     = useState([]);
-    const [chartData,  setChartData]  = useState([]);
-    const [loading,    setLoading]    = useState(true);
+    const [locations, setLocations] = useState([]);
+    const [kpiStats, setKpiStats] = useState({ totalAssets: 0, highRisk: 0, predictedFailures: 0 });
+    const [alerts, setAlerts] = useState([]);
+    const [chartData, setChartData] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState('--:--:--');
 
     const loadAll = async () => {
@@ -160,9 +161,9 @@ const Overview = () => {
                 }
                 if (riskScore == null) {
                     // last resort: compute from age + criticality if available
-                    const age  = asset.age_years     || 0;
-                    const crit = asset.criticality   || 1;
-                    riskScore  = Math.min(99, (age / 50) * 60 + (crit / 5) * 40);
+                    const age = asset.age_years || 0;
+                    const crit = asset.criticality || 1;
+                    riskScore = Math.min(99, (age / 50) * 60 + (crit / 5) * 40);
                 }
 
                 riskScore = parseFloat(parseFloat(riskScore).toFixed(1));
@@ -182,8 +183,8 @@ const Overview = () => {
 
             // ── 4. KPI stats ──────────────────────────────────────────────
             setKpiStats({
-                totalAssets:       enriched.length,
-                highRisk:          enriched.filter(a => a.status === 'critical').length,
+                totalAssets: enriched.length,
+                highRisk: enriched.filter(a => a.status === 'critical').length,
                 predictedFailures: enriched.filter(a => a.risk_score > 60).length,
             });
 
@@ -198,15 +199,15 @@ const Overview = () => {
             const rawAlerts = await fetchAlerts();
 
             const backendAlerts = rawAlerts.map(a => ({
-                id:       a.asset_id || a.id || '—',
+                id: a.asset_id || a.id || '—',
                 severity: (a.risk_score ?? a.score ?? 0) >= 75 ? 'critical' : 'warning',
-                time:     a.timestamp
-                              ? new Date(a.timestamp).toLocaleTimeString([], { hour12:false })
-                              : new Date().toLocaleTimeString([], { hour12:false }),
-                message:  a.top_reason
-                           || a.message
-                           || a.sensor_condition
-                           || `Risk score: ${a.risk_score ?? '—'}`,
+                time: a.timestamp
+                    ? new Date(a.timestamp).toLocaleTimeString([], { hour12: false })
+                    : new Date().toLocaleTimeString([], { hour12: false }),
+                message: a.top_reason
+                    || a.message
+                    || a.sensor_condition
+                    || `Risk score: ${a.risk_score ?? '—'}`,
             }));
 
             // fill alerts from enriched assets for any not already covered
@@ -214,17 +215,17 @@ const Overview = () => {
             const assetAlerts = enriched
                 .filter(a => a.status !== 'optimal' && !coveredIds.has(a.id))
                 .map(a => ({
-                    id:       a.id,
+                    id: a.id,
                     severity: a.status,
-                    time:     new Date().toLocaleTimeString([], { hour12:false }),
-                    message:  `${a.name} — risk score ${a.risk_score}% (${getRiskLabel(a.risk_score)})`,
+                    time: new Date().toLocaleTimeString([], { hour12: false }),
+                    message: `${a.name} — risk score ${a.risk_score}% (${getRiskLabel(a.risk_score)})`,
                 }));
 
             const allAlerts = [...backendAlerts, ...assetAlerts]
                 .sort((x, y) => y.time.localeCompare(x.time));
 
             setAlerts(allAlerts);
-            setLastUpdate(new Date().toLocaleTimeString([], { hour12:false }));
+            setLastUpdate(new Date().toLocaleTimeString([], { hour12: false }));
             setLoading(false);
 
         } catch (err) {
@@ -240,11 +241,15 @@ const Overview = () => {
     }, []);
 
     if (loading) return (
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-            height:'60vh', color:'#94a3b8', fontSize:'14px', gap:'10px' }}>
-            <div style={{ width:18, height:18, borderRadius:'50%',
-                border:'2px solid #6366f1', borderTopColor:'transparent',
-                animation:'spin 0.8s linear infinite' }}/>
+        <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: '60vh', color: '#94a3b8', fontSize: '14px', gap: '10px'
+        }}>
+            <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                border: '2px solid #6366f1', borderTopColor: 'transparent',
+                animation: 'spin 0.8s linear infinite'
+            }} />
             Loading infrastructure data...
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
@@ -270,9 +275,11 @@ const Overview = () => {
                     </div>
                     <button
                         onClick={loadAll}
-                        style={{ background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.3)',
-                            color:'#818cf8', borderRadius:'8px', padding:'6px 14px',
-                            fontSize:'12px', cursor:'pointer', marginLeft:'10px' }}>
+                        style={{
+                            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+                            color: '#818cf8', borderRadius: '8px', padding: '6px 14px',
+                            fontSize: '12px', cursor: 'pointer', marginLeft: '10px'
+                        }}>
                         ↺ Refresh
                     </button>
                 </div>
@@ -339,7 +346,7 @@ const Overview = () => {
                             center={CITY_CENTER}
                             zoom={13}
                             scrollWheelZoom={true}
-                            style={{ height:'100%', width:'100%', borderRadius:'12px' }}
+                            style={{ height: '100%', width: '100%', borderRadius: '12px' }}
                         >
                             <LayersControl position="topright">
                                 <LayersControl.BaseLayer name="Satellite" checked>
@@ -377,23 +384,31 @@ const Overview = () => {
                                     eventHandlers={{ click: () => navigate(`/asset/${loc.id}`) }}
                                 >
                                     <Popup>
-                                        <div style={{ fontFamily:'Inter, sans-serif', padding:'4px 0',
-                                            background:'#0f172a', borderRadius:'8px', minWidth:'160px' }}>
-                                            <div style={{ fontWeight:700, fontSize:'13px',
-                                                marginBottom:4, color:'#f1f5f9' }}>{loc.id}</div>
-                                            <div style={{ fontSize:'11px', color:'#94a3b8', marginBottom:6 }}>
+                                        <div style={{
+                                            fontFamily: 'Inter, sans-serif', padding: '4px 0',
+                                            background: '#0f172a', borderRadius: '8px', minWidth: '160px'
+                                        }}>
+                                            <div style={{
+                                                fontWeight: 700, fontSize: '13px',
+                                                marginBottom: 4, color: '#f1f5f9'
+                                            }}>{loc.id}</div>
+                                            <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 6 }}>
                                                 {loc.name}
                                             </div>
-                                            <div style={{ fontSize:'12px', fontWeight:700,
+                                            <div style={{
+                                                fontSize: '12px', fontWeight: 700,
                                                 color: getRiskColor(loc.risk_score),
-                                                display:'flex', alignItems:'center', gap:4 }}>
+                                                display: 'flex', alignItems: 'center', gap: 4
+                                            }}>
                                                 ML Risk: {loc.risk_score}%
                                             </div>
-                                            <div style={{ fontSize:'10px', color:getRiskColor(loc.risk_score),
-                                                fontWeight:600, marginTop:3 }}>
+                                            <div style={{
+                                                fontSize: '10px', color: getRiskColor(loc.risk_score),
+                                                fontWeight: 600, marginTop: 3
+                                            }}>
                                                 {getRiskLabel(loc.risk_score)}
                                             </div>
-                                            <div style={{ fontSize:'10px', color:'#475569', marginTop:6 }}>
+                                            <div style={{ fontSize: '10px', color: '#475569', marginTop: 6 }}>
                                                 Click for full analysis →
                                             </div>
                                         </div>
@@ -466,18 +481,18 @@ const Overview = () => {
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        background:'#0f172a',
-                                        border:'1px solid rgba(255,255,255,0.1)',
-                                        borderRadius:10,
-                                        fontSize:'12px',
-                                        color:'#f1f5f9',
+                                        background: '#0f172a',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: 10,
+                                        fontSize: '12px',
+                                        color: '#f1f5f9',
                                     }}
-                                    cursor={{ fill:'rgba(255,255,255,0.03)' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                                     formatter={v => [`${v}%`, 'Risk Score']}
                                 />
-                                <Bar dataKey="risk" radius={[6,6,0,0]} name="Risk Score">
+                                <Bar dataKey="risk" radius={[6, 6, 0, 0]} name="Risk Score">
                                     {chartData.map((entry, i) => (
-                                        <Cell key={i} fill={entry.fill}/>
+                                        <Cell key={i} fill={entry.fill} />
                                     ))}
                                 </Bar>
                             </BarChart>
