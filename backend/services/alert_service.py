@@ -24,7 +24,7 @@ async def send_alert(
     Never crashes the app if n8n is unreachable.
     """
     if not settings.N8N_WEBHOOK_URL:
-        print(f"⚠️  N8N_WEBHOOK_URL not set — skipping alert for {asset_id}")
+        print(f"[SKIP] N8N_WEBHOOK_URL not set — skipping alert for {asset_id}")
         return False
 
     payload = {
@@ -34,7 +34,7 @@ async def send_alert(
         "severity":   get_severity(risk_score),
         "top_reason": top_reason,
         "message": (
-            f"⚠️ INFRA ALERT: {asset_id} | "
+            f"[ALERT] INFRA ALERT: {asset_id} | "
             f"Risk: {risk_score:.1f}/100 | "
             f"Severity: {get_severity(risk_score)} | "
             f"Reason: {top_reason} | "
@@ -47,9 +47,9 @@ async def send_alert(
             resp = await client.post(
                 settings.N8N_WEBHOOK_URL, json=payload)
             resp.raise_for_status()
-            print(f"✅ n8n alert sent — {asset_id} "
+            print(f"[OK] n8n alert sent — {asset_id} "
                   f"({get_severity(risk_score)})")
             return True
     except Exception as e:
-        print(f"⚠️  n8n alert failed (demo mode): {e}")
+        print(f"[FAIL] n8n alert failed (demo mode): {e}")
         return False

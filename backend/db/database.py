@@ -15,7 +15,7 @@ async def connect_db():
     await db.sensor_readings.create_index([("anomaly_score", 1)])
     await db.risk_scores.create_index([("asset_id", 1)], unique=True)
     await db.alerts.create_index([("timestamp", -1)])
-    print("✅ MongoDB connected")
+    print("[OK] MongoDB connected")
 
 async def close_db():
     if client:

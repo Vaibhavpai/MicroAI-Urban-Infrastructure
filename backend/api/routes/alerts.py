@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
 from db.crud import (
     get_all_alerts, get_all_risk_scores,
     insert_alert, alert_exists_recently,
@@ -9,6 +10,11 @@ import uuid
 from datetime import datetime
 
 router = APIRouter()
+
+class DispatchRequest(BaseModel):
+    asset_id: str
+    message: str
+
 
 
 @router.get("")
@@ -64,6 +70,24 @@ async def trigger_alerts():
         "alert_ids":     triggered,
         "skipped_cooldown": skipped,
     }
+
+
+@router.post("/dispatch")
+async def dispatch_crew(req: DispatchRequest):
+    # Fetch asset to get its type so we can route correctly in n8n
+    asset = await get_asset(req.asset_id) or {}
+    asset_type = asset.get("asset_type", "UNKNOWN")
+
+    # Manually fire the webhook using the send_alert function
+    # We pass the user's custom dispatch order as the 'top_reason'
+    success = await send_alert(
+        asset_id=req.asset_id,
+        risk_score=100.0,  # Manual dispatch is treated as high priority
+        top_reason=f"MANUAL DISPATCH: {req.message}",
+        asset_type=asset_type
+    )
+
+    return {"success": success, "dispatched": req.asset_id}
 
 
 def _top_reason(asset_type: str, risk_score: float) -> str:

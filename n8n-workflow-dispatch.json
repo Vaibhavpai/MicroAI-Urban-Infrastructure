@@ -1,0 +1,177 @@
+{
+    "name": "InfraWatch Dispatch Workflow",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "infrawatch-alert",
+                "responseMode": "onReceived",
+                "options": {}
+            },
+            "id": "1dcfdb9c-9c3f-42e5-ad0d-4054da2ae5eb",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                280,
+                340
+            ],
+            "webhookId": "infrawatch-alert"
+        },
+        {
+            "parameters": {
+                "dataType": "string",
+                "value1": "={{ $json.body.asset_id }}",
+                "rules": {
+                    "rules": [
+                        {
+                            "value2": "BRIDGE",
+                            "output": 0,
+                            "operation": "startsWith"
+                        },
+                        {
+                            "value2": "PIPE",
+                            "output": 1,
+                            "operation": "startsWith"
+                        },
+                        {
+                            "value2": "ROAD",
+                            "output": 2,
+                            "operation": "startsWith"
+                        },
+                        {
+                            "value2": "TRANSFORMER",
+                            "output": 3,
+                            "operation": "startsWith"
+                        }
+                    ]
+                },
+                "fallbackOutput": 4
+            },
+            "id": "37f48b11-4ed4-4f05-8968-3e4210d7e48c",
+            "name": "Switch on Asset Type",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 1,
+            "position": [
+                520,
+                340
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "YOUR_TELEGRAM_CHAT_ID",
+                "text": "=[BRIDGE CREW] Critical Alert for {{ $json.body.asset_id }}\n\nRisk: {{ $json.body.risk_score }}/100\nSeverity: {{ $json.body.severity }}\nReason: {{ $json.body.top_reason }}\n\nPlease deploy Team Alpha immediately for structural assessment.",
+                "additionalFields": {}
+            },
+            "id": "7631165a-0f89-40cb-9860-2ff58ed6b1b7",
+            "name": "Telegram Bridge Crew",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.1,
+            "position": [
+                860,
+                140
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "YOUR_TELEGRAM_CHAT_ID",
+                "text": "=[PIPELINE CREW] Critical Alert for {{ $json.body.asset_id }}\n\nRisk: {{ $json.body.risk_score }}/100\nSeverity: {{ $json.body.severity }}\nReason: {{ $json.body.top_reason }}\n\nPlease deploy Team Beta immediately with leak containment gear.",
+                "additionalFields": {}
+            },
+            "id": "f5f1edb1-23f2-45e0-b6a8-d9e50dfb6c08",
+            "name": "Telegram Pipe Crew",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.1,
+            "position": [
+                860,
+                340
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "YOUR_TELEGRAM_CHAT_ID",
+                "text": "=[ROAD & TRANSIT CREW] Critical Alert for {{ $json.body.asset_id }}\n\nRisk: {{ $json.body.risk_score }}/100\nSeverity: {{ $json.body.severity }}\nReason: {{ $json.body.top_reason }}\n\nDeploy Team Charlie for surface inspection & traffic routing.",
+                "additionalFields": {}
+            },
+            "id": "d0e1b212-fcb0-46eb-a46c-e4e61b17a02c",
+            "name": "Telegram Road Crew",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.1,
+            "position": [
+                860,
+                540
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "YOUR_TELEGRAM_CHAT_ID",
+                "text": "=[ELECTRICAL CREW] Critical Alert for {{ $json.body.asset_id }}\n\nRisk: {{ $json.body.risk_score }}/100\nSeverity: {{ $json.body.severity }}\nReason: {{ $json.body.top_reason }}\n\nDeploy Team Delta immediately for grid thermal/harmonic scan.",
+                "additionalFields": {}
+            },
+            "id": "18f5043a-73d9-4d32-aa91-32598ad53f93",
+            "name": "Telegram Electrical Crew",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.1,
+            "position": [
+                860,
+                740
+            ]
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Switch on Asset Type",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Switch on Asset Type": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram Bridge Crew",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Telegram Pipe Crew",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Telegram Road Crew",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Telegram Electrical Crew",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "df708e2f-5374-4b5a-aa84-afcbe6f9e5af",
+    "id": "eZfNqTfMhFw5Kx4P",
+    "meta": {
+        "instanceId": "dc12f5a6391d84b0f98e8c89c1a5b42d7be8d11ebf6c99c824c0d0c3eb1863db"
+    },
+    "tags": []
+}

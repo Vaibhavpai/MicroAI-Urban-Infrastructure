@@ -1,0 +1,268 @@
+/* ═══ Digital Twin Page ═══ */
+.dt-container-v3 {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    color: #e2e8f0;
+    animation: fadeInUp 0.5s var(--ease-smooth) both;
+}
+
+/* Page Header */
+.dt-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.dt-page-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.dt-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--emerald);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.dt-page-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Main Grid */
+.dt-grid-v3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+}
+
+.dt-panel-v3 {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s var(--ease-smooth);
+}
+
+.dt-panel-v3:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-md);
+}
+
+.dt-panel-v3.span-2 {
+    grid-column: 1 / -1;
+}
+
+.dt-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.dt-panel-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-icon {
+    color: var(--cyan);
+}
+
+.panel-icon.rose {
+    color: var(--rose);
+}
+
+.panel-icon.amber {
+    color: var(--amber);
+}
+
+.dt-panel-subtitle {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+/* Map Wrapper */
+.dt-map-wrapper {
+    flex: 1;
+    min-height: 350px;
+}
+
+/* Cascade Graph */
+.cascade-graph-wrapper {
+    flex: 1;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* Viewport Toolbar */
+.viewport-toolbar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+}
+
+.tool-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+}
+
+.tool-btn:hover {
+    background: rgba(34, 211, 238, 0.15);
+    color: var(--cyan);
+    border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* Weather Legend */
+.weather-legend {
+    display: flex;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+}
+
+.l-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* Stacked Charts */
+.stacked-weather-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 22px;
+    min-height: 240px;
+}
+
+.weather-chart-slice {
+    flex: 1;
+    min-height: 180px;
+}
+
+.weather-chart-slice.main-chart {
+    min-height: 200px;
+}
+
+.chart-timeline-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+/* Bottom Grid - Mini Cards */
+.dt-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.dt-mini-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 130px;
+    transition: all 0.3s var(--ease-smooth);
+    overflow: hidden;
+}
+
+.dt-mini-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.mini-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mini-card-title {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.mini-card-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-top: 6px;
+}
+
+.mini-card-chart {
+    flex: 1;
+    margin-top: 4px;
+}
+
+/* Recharts Overrides */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+    stroke: rgba(255, 255, 255, 0.04);
+}
+
+.recharts-tooltip-cursor {
+    fill: rgba(255, 255, 255, 0.03);
+}

@@ -57,11 +57,11 @@ class ModelStore:
         if not self.stub_mode:
             self._load(model_dir)
         else:
-            print("⚠️  ModelStore running in STUB_MODE")
+            print("[WARN] ModelStore running in STUB_MODE")
 
     def _load(self, model_dir: str):
         try:
-            print("🔄 Loading ML models...")
+            print("[INFO] Loading ML models...")
             for t in ASSET_TYPES:
                 self.risk_scorers[t] = joblib.load(
                     os.path.join(model_dir, f"risk_model_{t}.pkl"))
@@ -69,13 +69,13 @@ class ModelStore:
                     os.path.join(model_dir, f"shap_explainer_{t}.pkl"))
                 self.scalers[t]         = joblib.load(
                     os.path.join(model_dir, f"scaler_{t}.pkl"))
-                print(f"   ✅ {t} models loaded")
+                print(f"   [OK] {t} models loaded")
 
             self._loaded = True
-            print("✅ All models loaded successfully")
+            print("[OK] All models loaded successfully")
 
         except Exception as e:
-            print(f"⚠️  Model load failed — falling back to STUB_MODE: {e}")
+            print(f"[WARN] Model load failed -- falling back to STUB_MODE: {e}")
             self.stub_mode = True
 
     # ── Helpers ───────────────────────────────────────────────────────────────

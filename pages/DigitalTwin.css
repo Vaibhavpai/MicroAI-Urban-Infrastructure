@@ -1,0 +1,331 @@
+:root {
+    --dt-bg: #0b0f19;
+    --dt-card: rgba(17, 24, 39, 0.7);
+    --dt-border: rgba(255, 255, 255, 0.05);
+    --dt-cyan: #22d3ee;
+    --dt-orange: #f59e0b;
+    --dt-rose: #f43f5e;
+    --dt-lime: #bef264;
+}
+
+.dt-container-v3 {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    min-height: 100vh;
+    background: #0b0f19;
+    color: #e2e8f0;
+}
+
+/* Main Grid */
+.dt-grid-v3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 400px 420px;
+    gap: 24px;
+    /* Matches standard spacing in reference */
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.dt-panel-v3 {
+    background: var(--dt-card);
+    border: 1px solid var(--dt-border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.dt-panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.dt-panel-subtitle {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+/* Central Hub Overlay Layer */
+.dt-overlay-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.risk-intel-hub {
+    position: absolute;
+    top: 412px;
+    /* Center of (400 + 12) */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 70px;
+    background: #0f172a;
+    border: 1.5px solid #1e293b;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    box-shadow:
+        0 0 0 6px #0b0f19,
+        0 10px 30px rgba(0, 0, 0, 0.9);
+    pointer-events: auto;
+}
+
+.risk-intel-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    text-align: center;
+    line-height: 1.4;
+    /* More vertical space between lines */
+}
+
+/* Viewport Toolbar */
+.viewport-toolbar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+}
+
+.tool-btn {
+    width: 24px;
+    height: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    background: #1e293b;
+    color: var(--dt-cyan);
+}
+
+/* Simulation Decoration Lines */
+.sim-lead-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Refined Simulation Slider */
+.sim-slider-container {
+    margin-top: auto;
+    padding: 15px 10px 5px;
+}
+
+.track-bg {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #22d3ee 60%, #ef4444 60%);
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.slider-thumb {
+    position: absolute;
+    left: 60%;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 2px solid #22d3ee;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--dt-cyan);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.label-past {
+    color: #64748b;
+}
+
+.label-future {
+    color: #ef4444;
+}
+
+.slider-arrow {
+    color: #475569;
+}
+
+/* Viewports */
+.viewport-3d {
+    flex: 1;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+}
+
+.bridge-simulation-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.crack-simulation-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Carousel/Chart Bottom Grid */
+.dt-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.dt-mini-card {
+    background: var(--dt-card);
+    border: 1px solid var(--dt-border);
+    border-radius: 12px;
+    padding: 12px;
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Stacked Weather Chart Styles */
+.weather-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.weather-legend {
+    display: flex;
+    gap: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.l-line {
+    width: 12px;
+    height: 2px;
+    border-radius: 1px;
+}
+
+.l-line.cyan {
+    background: var(--dt-cyan);
+}
+
+.l-line.orange {
+    background: var(--dt-orange);
+}
+
+.l-line.purple {
+    background: #6366f1;
+}
+
+.l-line.red {
+    background: transparent;
+    border-top: 1px dashed var(--dt-rose);
+}
+
+.stacked-weather-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 20px;
+    /* Space for vertical labels */
+}
+
+.weather-chart-slice {
+    flex: 1;
+    display: flex;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.y-axis-label {
+    position: absolute;
+    left: -25px;
+    top: 50%;
+    transform: rotate(-90deg) translate(50%, -50%);
+    transform-origin: left bottom;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+    width: 0;
+}
+
+.slice-content {
+    flex: 1;
+    height: 100%;
+}
+
+.y-axis-ticks {
+    width: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2px 0;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: #334155;
+    text-align: right;
+}
+
+.chart-timeline-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 25px 0 0;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+/* Recharts Overrides */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+    stroke: rgba(255, 255, 255, 0.05);
+}
+
+.recharts-tooltip-cursor {
+    fill: rgba(255, 255, 255, 0.05);
+}
