@@ -39,3 +39,4 @@ export const triggerAlerts = () => post("/alerts/trigger", {});
 export const dispatchOrder = (assetId, message) => post("/alerts/dispatch", { asset_id: assetId, message });
 export const federatedTrain = () => post("/federated/train", {});
 export const getAIRecommendation = (body) => post("/ai-recommend", body);
+export const getWhatifSummary = (body) => post("/predict/whatif/summary", body);

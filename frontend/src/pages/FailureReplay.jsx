@@ -7,7 +7,7 @@ import {
   Play, Pause, ChevronsLeft, ChevronsRight,
   SkipBack, SkipForward, Activity, ScrollText
 } from 'lucide-react'
-import { getAssets } from '../api/client'
+import { getAssets, getRiskScores } from '../api/client'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const getRiskColor = s => s >= 80 ? '#ef4444' : s >= 60 ? '#f97316' : s >= 40 ? '#eab308' : '#22c55e'
@@ -175,15 +175,19 @@ export default function FailureReplay() {
   const intervalRef = useRef(null)
   const logRef = useRef(null)
 
-  // Fetch assets from MongoDB on mount
   useEffect(() => {
-    getAssets()
-      .then(data => {
-        const list = Array.isArray(data) ? data : []
-        setAssetList(list)
-        if (list.length > 0 && !asset) setAsset(list[0].asset_id)
+    Promise.all([getAssets(), getRiskScores()])
+      .then(([assetsData, scoresData]) => {
+        const list = Array.isArray(assetsData) ? assetsData : []
+        const scores = Array.isArray(scoresData) ? scoresData : []
+        const scoreMap = {}
+        scores.forEach(s => { scoreMap[s.asset_id] = s.risk_score || 0 })
+
+        const criticalList = list.filter(a => (scoreMap[a.asset_id] || 0) >= 80)
+        setAssetList(criticalList)
+        if (criticalList.length > 0 && !asset) setAsset(criticalList[0].asset_id)
       })
-      .catch(err => console.error('Failed to fetch assets:', err))
+      .catch(err => console.error('Failed to fetch assets/scores:', err))
   }, [])
 
   const currentAssetDoc = assetList.find(a => a.asset_id === asset)
@@ -257,7 +261,7 @@ export default function FailureReplay() {
         </div>
         <select value={asset} onChange={e => { setAsset(e.target.value); reset() }}
           style={{ background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', cursor: 'pointer' }}>
-          {assetList.map(a => <option key={a.asset_id} value={a.asset_id}>{a.asset_id} ({a.city || a.asset_type})</option>)}
+          {assetList.length === 0 ? <option value="">No Critical Assets...</option> : assetList.map(a => <option key={a.asset_id} value={a.asset_id}>{a.asset_id} ({a.city || a.asset_type})</option>)}
         </select>
       </div>
 

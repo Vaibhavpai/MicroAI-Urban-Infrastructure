@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup, LayersControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { simulateTwin, predictCascade, getWeather } from '../api/client';
+import { simulateTwin, predictCascade, getAssets } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import './DigitalTwin.css';
 
@@ -32,10 +32,31 @@ const DigitalTwin = () => {
     const [trajectoryChartData, setTrajectoryChartData] = useState([]);
     const [miniData] = useState(Array.from({ length: 15 }, (_, i) => ({ val: 30 + Math.random() * 40 })));
 
+    const [assets, setAssets] = useState([]);
+    const [selectedAsset, setSelectedAsset] = useState('BRIDGE_001');
+
     useEffect(() => {
+        const fetchInitial = async () => {
+            try {
+                const assetList = await getAssets();
+                const usable = Array.isArray(assetList) ? assetList : [];
+                setAssets(usable);
+                if (usable.length > 0) {
+                    setSelectedAsset(usable[0].asset_id);
+                }
+            } catch (err) {
+                console.error("Failed to fetch assets", err);
+            }
+        };
+        fetchInitial();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedAsset) return;
+
         const fetchApiData = async () => {
             try {
-                const twinJson = await simulateTwin('BRIDGE_001', 30);
+                const twinJson = await simulateTwin(selectedAsset, 30);
                 setTwinData(twinJson);
 
                 if (twinJson.trajectory) {
@@ -50,7 +71,7 @@ const DigitalTwin = () => {
                     setTrajectoryChartData(mappedData);
                 }
 
-                const cascadeJson = await predictCascade('BRIDGE_001');
+                const cascadeJson = await predictCascade(selectedAsset);
                 setCascadeData(cascadeJson);
             } catch (error) {
                 console.error("Failed to fetch API data", error);
@@ -58,22 +79,43 @@ const DigitalTwin = () => {
         };
 
         fetchApiData();
-    }, []);
+    }, [selectedAsset]);
 
     const displayData = trajectoryChartData.length > 0 ? trajectoryChartData : Array.from({ length: 30 }, (_, i) => ({
         time: i, label: `Day ${i}`, temp: 20, wind: 50, precip: 10, risk: 10
     }));
 
+    const currentAssetDoc = assets.find(a => a.asset_id === selectedAsset);
+    const centerLat = currentAssetDoc?.location_lat || 19.076;
+    const centerLng = currentAssetDoc?.location_lng || 72.877;
+
     return (
         <div className="dt-container-v3">
             {/* Page Header */}
-            <div className="dt-page-header">
+            <div className="dt-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1 className="dt-page-title">
                         <span className="text-gradient-cyan">Digital Twin Engine</span>
                         <span className="dt-live-badge"><Zap size={11} /> Active</span>
                     </h1>
                     <p className="dt-page-subtitle">Real-time infrastructure simulation & failure prediction</p>
+                </div>
+                <div>
+                    <select
+                        value={selectedAsset}
+                        onChange={(e) => setSelectedAsset(e.target.value)}
+                        style={{
+                            background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9',
+                            borderRadius: '8px', padding: '8px 12px', fontSize: '13px', cursor: 'pointer',
+                            outline: 'none'
+                        }}
+                    >
+                        {assets.map(a => (
+                            <option key={a.asset_id} value={a.asset_id}>
+                                {a.asset_id} ({a.asset_type})
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -90,7 +132,7 @@ const DigitalTwin = () => {
                         </div>
                     </div>
                     <div className="dt-map-wrapper">
-                        <MapContainer center={CITY_CENTER} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%', borderRadius: 8 }}>
+                        <MapContainer key={`${selectedAsset}-${centerLat}`} center={[centerLat, centerLng]} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%', borderRadius: 8 }}>
                             <LayersControl position="topright">
                                 <LayersControl.BaseLayer name="Satellite" checked>
                                     <TileLayer
@@ -105,8 +147,9 @@ const DigitalTwin = () => {
                             </LayersControl>
                             {cascadeData && cascadeData.affected_assets && cascadeData.affected_assets.map((asset, i) => {
                                 const angle = (i / cascadeData.affected_assets.length) * Math.PI * 2;
-                                const lat = 19.076 + Math.cos(angle) * 0.012;
-                                const lng = 72.877 + Math.sin(angle) * 0.012;
+                                const distanceScaling = asset.distance ? asset.distance * 0.006 : 0.012;
+                                const lat = centerLat + Math.cos(angle) * distanceScaling;
+                                const lng = centerLng + Math.sin(angle) * distanceScaling;
                                 const color = asset.cascade_risk > 60 ? '#f43f5e' : asset.cascade_risk > 40 ? '#f59e0b' : '#10b981';
                                 return (
                                     <CircleMarker key={i} center={[lat, lng]} radius={10}
@@ -122,13 +165,15 @@ const DigitalTwin = () => {
                                     </CircleMarker>
                                 );
                             })}
-                            <CircleMarker center={[19.076, 72.877]} radius={14}
+                            <CircleMarker center={[centerLat, centerLng]} radius={14}
                                 pathOptions={{ color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.3, weight: 3 }}
                             >
                                 <Popup>
                                     <div style={{ fontFamily: 'Inter, sans-serif' }}>
-                                        <strong style={{ color: '#f1f5f9' }}>BRIDGE_001</strong><br />
-                                        <span style={{ color: '#f43f5e', fontWeight: 700 }}>Source: {cascadeData?.source_risk_score || '...'}%</span>
+                                        <strong style={{ color: '#f1f5f9' }}>{selectedAsset}</strong><br />
+                                        <span style={{ color: '#f43f5e', fontWeight: 700 }}>
+                                            Source Risk: {cascadeData?.source_risk_score || twinData?.trajectory?.[0]?.risk_score || '...'}%
+                                        </span>
                                     </div>
                                 </Popup>
                             </CircleMarker>
@@ -145,7 +190,7 @@ const DigitalTwin = () => {
                                 CASCADE FAILURE NETWORK
                             </h3>
                             <p className="dt-panel-subtitle">
-                                {cascadeData ? `${cascadeData.total_assets_at_risk} assets at risk from BRIDGE_001` : 'Loading cascade simulation...'}
+                                {cascadeData ? `${cascadeData.total_assets_at_risk} assets at risk from ${selectedAsset}` : 'Loading cascade simulation...'}
                             </p>
                         </div>
                     </div>
@@ -170,9 +215,9 @@ const DigitalTwin = () => {
                                 <circle r="38" fill="none" stroke="#f43f5e" strokeWidth="1" opacity="0.3" strokeDasharray="4 4">
                                     <animateTransform attributeName="transform" type="rotate" values="0;360" dur="20s" repeatCount="indefinite" />
                                 </circle>
-                                <text y="-4" textAnchor="middle" fill="#fff" fontSize="8.5" fontWeight="800">BRIDGE_001</text>
+                                <text y="-4" textAnchor="middle" fill="#fff" fontSize="8.5" fontWeight="800">{selectedAsset}</text>
                                 <text y="10" textAnchor="middle" fill="#f43f5e" fontSize="7.5" fontWeight="600">
-                                    {cascadeData ? `Risk: ${cascadeData.source_risk_score}%` : '...'}
+                                    Risk: {cascadeData?.source_risk_score || twinData?.trajectory?.[0]?.risk_score || '...'}%
                                 </text>
                             </g>
 

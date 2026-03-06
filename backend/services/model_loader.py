@@ -31,6 +31,8 @@ FEATURE_COLS = {
 
 def extract_asset_type(asset_id: str) -> str:
     prefix = asset_id.split("_")[0].upper()
+    if prefix == "PIPELINE":
+        prefix = "PIPE"
     if prefix not in ASSET_TYPES:
         raise ValueError(f"Unknown asset type prefix: '{prefix}'. "
                          f"Must be one of {ASSET_TYPES}")
@@ -223,6 +225,7 @@ class ModelStore:
         return {
             "source_asset":        asset_id,
             "asset_type":          asset_type,
+            "source_risk_score":   base_score if 'base_score' in locals() else 70.0,
             "affected_assets":     affected,
             "total_assets_at_risk": len(affected),
         }
@@ -344,6 +347,7 @@ class ModelStore:
             for i, cid in enumerate(connected)
         ]
         return {"source_asset": asset_id, "asset_type": asset_type,
+                "source_risk_score": base,
                 "affected_assets": affected,
                 "total_assets_at_risk": len(affected)}
 

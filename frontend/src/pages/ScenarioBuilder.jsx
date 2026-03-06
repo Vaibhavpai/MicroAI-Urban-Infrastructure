@@ -3,8 +3,8 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, Tooltip
 } from 'recharts'
-import { FlaskConical, RotateCcw, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { getAssets } from '../api/client'
+import { FlaskConical, RotateCcw, Zap, TrendingUp, TrendingDown, Minus, Download } from 'lucide-react'
+import { getAssets, getWhatifSummary } from '../api/client'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const getRiskColor = s => s >= 80 ? '#ef4444' : s >= 60 ? '#f97316' : s >= 40 ? '#eab308' : '#22c55e'
@@ -156,6 +156,8 @@ export default function ScenarioBuilder() {
   const baseline = BASELINES[asset] || Object.values(BASELINES)[0] || {}
   const [values, setValues] = useState({})
   const [loading, setLoading] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [summaryMsg, setSummaryMsg] = useState(null)
   const debounceRef = useRef(null)
 
   // reset when asset changes
@@ -188,6 +190,72 @@ export default function ScenarioBuilder() {
     setValues(prev => ({ ...prev, [key]: parseFloat(val) }))
   }
 
+  const handleDownload = async () => {
+    setDownloading(true)
+    setSummaryMsg(null)
+    try {
+      const summaryResult = await getWhatifSummary({
+        asset_id: asset,
+        asset_category: assetCategory,
+        base_risk_score: baseRisk,
+        mod_risk_score: modRisk,
+        delta_score: delta,
+        baseline_values: baseline,
+        scenario_values: values,
+        most_impactful_change: mostImpactful ? {
+          feature: mostImpactful.label,
+          impact: mostImpactful.impact,
+          original_value: mostImpactful.baseVal,
+          modified_value: mostImpactful.modVal
+        } : null
+      });
+
+      const report = `What-If Scenario Risk Report
+==============================
+Asset ID: ${asset}
+Category: ${assetCategory}
+
+Risk Assessment
+---------------
+Baseline Risk: ${baseRisk.toFixed(1)} / 100 (${getRiskLevel(baseRisk)})
+Scenario Risk: ${modRisk.toFixed(1)} / 100 (${getRiskLevel(modRisk)})
+Risk Points Change: ${delta > 0 ? '+' : ''}${delta.toFixed(1)}
+
+Sensor Changes (Baseline -> Scenario)
+--------------------------------------
+${sensorConfigs.map(cfg => {
+        const isChanged = Math.abs(values[cfg.key] - baseline[cfg.key]) > 0.05
+        if (!isChanged) return ``
+        return `${cfg.label}: ${baseline[cfg.key].toFixed(1)} ${cfg.unit} -> ${values[cfg.key].toFixed(1)} ${cfg.unit}`
+      }).filter(l => l).join('\n')}
+
+AI Scenario Summary (Powered by Gemini 2.5 Flash)
+-------------------------------------------------
+${summaryResult.summary || 'Summary unavailable.'}
+
+Generated on: ${new Date().toLocaleString()}
+`;
+
+      const blob = new Blob([report], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Scenario_Report_${asset}.txt`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      setSummaryMsg("Downloaded successfully!")
+    } catch (err) {
+      console.error(err)
+      setSummaryMsg("Failed to generate summary.")
+    } finally {
+      setDownloading(false)
+      setTimeout(() => setSummaryMsg(null), 3500)
+    }
+  }
+
   // style tokens
   const page = { minHeight: '100vh', background: '#020817', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', fontFamily: 'Inter, sans-serif', color: '#f1f5f9' }
   const card = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', padding: '24px' }
@@ -209,15 +277,25 @@ export default function ScenarioBuilder() {
           </h1>
           <p style={muted}>Simulate sensor changes and observe real-time impact on predicted risk</p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <span style={label}>Asset</span>
-          <select value={asset} onChange={e => setAsset(e.target.value)}
-            style={{ background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', cursor: 'pointer', minWidth: '220px' }}>
-            {assetList.map(a => <option key={a.asset_id} value={a.asset_id}>{a.asset_id} ({a.city || a.asset_type})</option>)}
-          </select>
-          <span style={{ ...label, fontSize: '10px', color: '#818cf8' }}>
-            {assetCategory} • {sensorConfigs.length} sensors
-          </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={label}>Asset</span>
+            <select value={asset} onChange={e => setAsset(e.target.value)}
+              style={{ background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', cursor: 'pointer', minWidth: '220px' }}>
+              {assetList.map(a => <option key={a.asset_id} value={a.asset_id}>{a.asset_id} ({a.city || a.asset_type})</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <span style={{ ...label, fontSize: '10px', color: '#818cf8', textAlign: 'left' }}>
+              {assetCategory} • {sensorConfigs.length} sensors
+            </span>
+            <button onClick={handleDownload} disabled={downloading}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #a855f7, #6366f1)', border: 'none', color: '#fff', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', cursor: downloading ? 'wait' : 'pointer', fontWeight: 'bold' }}>
+              <Download size={12} />
+              {downloading ? 'Processing AI...' : 'Download & Summary'}
+            </button>
+          </div>
+          {summaryMsg && <span style={{ fontSize: '10px', color: summaryMsg.includes('Failed') ? '#ef4444' : '#22c55e', alignSelf: 'flex-end', fontWeight: '600' }}>{summaryMsg}</span>}
         </div>
       </div>
 
