@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     RISK_THRESHOLD: float = 75.0
     STUB_MODE: bool = True
 
+    GEMINI_API_KEY: str = ""
+
     # ── Kafka ────────────────────────────────────────────────────────────
     USE_KAFKA: bool = True  # Set to False to revert to APScheduler
     KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"

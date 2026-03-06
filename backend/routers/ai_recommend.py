@@ -13,7 +13,7 @@ logger = logging.getLogger("ai_recommend")
 
 router = APIRouter()
 
-GEMINI_API_KEY = "AIzaSyCQhPWYBMfPylzBmef_3A-8v39HzgH3NcU"
+GEMINI_API_KEY = "AIzaSyAikFxdcQHNC2sB7jneXVf6VkxSTf-iocQ"
 GEMINI_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/"
     f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"

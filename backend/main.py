@@ -1,7 +1,9 @@
 import asyncio
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from db.database import connect_db, close_db
@@ -80,6 +82,17 @@ app.add_middleware(CORSMiddleware,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    import json
+    body = await request.body()
+    logger.error(f"[422 Validation Error] body: {body.decode(errors='replace')}")
+    logger.error(f"[422 Validation Error] detail: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": body.decode(errors='replace')},
+    )
 
 # ── Old routes (GET, unchanged) ──────────────────────────────────────────────
 app.include_router(assets.router,    prefix="/assets",           tags=["Assets"])

@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, Any, List
 from services.model_loader import model_store
+import httpx
+from routers.ai_recommend import GEMINI_API_KEY
 
 router = APIRouter()
 
@@ -98,3 +100,56 @@ async def predict_whatif(request: WhatIfRequest):
         "modified_top_factors": modified_factors,
         "most_impactful_change": most_impactful_change
     }
+
+
+from typing import Dict, Any, List, Optional
+
+class WhatIfSummaryRequest(BaseModel):
+    asset_id: str
+    asset_category: str
+    base_risk_score: float
+    mod_risk_score: float
+    delta_score: float
+    baseline_values: Dict[str, Any]
+    scenario_values: Dict[str, Any]
+    most_impactful_change: Optional[Dict[str, Any]] = None
+
+GEMINI_SUMMARY_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+
+@router.post("/whatif/summary")
+async def get_whatif_summary(req: WhatIfSummaryRequest):
+    prompt = f"""You are an expert infrastructure maintenance engineer.
+Analyze the following What-If simulated scenario for an urban infrastructure asset:
+
+Asset ID: {req.asset_id}
+Asset Category: {req.asset_category}
+Baseline Risk Score: {req.base_risk_score:.1f}/100
+Simulated Scenario Risk Score: {req.mod_risk_score:.1f}/100 (Change: {req.delta_score:+.1f})
+
+Baseline Sensor Values: {req.baseline_values}
+Simulated Sensor Values: {req.scenario_values}
+Most Impactful Change: {req.most_impactful_change if req.most_impactful_change else "None"}
+
+Provide a concise technical summary (3-4 sentences maximum) of how the simulated changes affect the asset's risk profile, and what the primary concern or positive outcome is. Provide plain text without markdown or asterisks."""
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.5},
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(GEMINI_SUMMARY_URL, json=payload)
+            resp.raise_for_status()
+            body = resp.json()
+            raw_text = body.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            return {"summary": raw_text.strip()}
+    except httpx.HTTPStatusError as e:
+        import logging
+        logger = logging.getLogger("whatif_summary")
+        logger.error(f"[Gemini 2.5 Flash] HTTP Error {e.response.status_code}: {e.response.text}")
+        return {"summary": "Gemini 2.5 Flash summary generation failed."}
+    except Exception as e:
+        import logging
+        logger = logging.getLogger("whatif_summary")
+        logger.error(f"[Gemini 2.5 Flash] Unexpected Error: {e}")
+        return {"summary": "Gemini 2.5 Flash summary generation failed."}
